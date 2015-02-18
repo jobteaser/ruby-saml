@@ -103,8 +103,21 @@ class XmlSecurityTest < Test::Unit::TestCase
     end
   end
 
-  context "XmlSecurity::SignedDocument" do
+  context 'XMLSecurity::BaseDocument#algorithm' do
+    { XMLSecurity::Document::SHA1 => OpenSSL::Digest::SHA1,
+      XMLSecurity::Document::SHA256 => OpenSSL::Digest::SHA256,
+      XMLSecurity::Document::SHA384 => OpenSSL::Digest::SHA384,
+      XMLSecurity::Document::SHA512 => OpenSSL::Digest::SHA512 }.each do |doc, algorithm|
 
+        context "for #{doc}" do
+          should 'return the correct algorithm' do
+            assert XMLSecurity::BaseDocument.new.algorithm(doc) == algorithm
+          end
+        end
+    end
+  end
+
+  context "XmlSecurity::SignedDocument" do
     context "#extract_inclusive_namespaces" do
       should "support explicit namespace resolution for exclusive canonicalization" do
         response = fixture(:open_saml_response, false)
