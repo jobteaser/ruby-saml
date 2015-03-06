@@ -40,7 +40,7 @@ module OneLogin
         request_params = {"SAMLRequest" => base64_request}
 
         if settings.security[:authn_requests_signed] && !settings.security[:embed_sign] && settings.private_key
-          signature_method = settings.security[:signature_method]
+          signature_method    = settings.security[:signature_method]
           params['SigAlg']    = signature_method
           url_string          = "SAMLRequest=#{CGI.escape(base64_request)}"
           url_string         += "&RelayState=#{CGI.escape(params['RelayState'])}" if params['RelayState']
@@ -113,7 +113,7 @@ module OneLogin
         end
 
         # embebed sign
-        if settings.security[:authn_requests_signed] && settings.private_key && settings.certificate && settings.security[:embed_sign] 
+        if settings.security[:authn_requests_signed] && settings.private_key && settings.certificate && settings.security[:embed_sign]
           private_key = settings.get_sp_key()
           cert = settings.get_sp_cert()
           request_doc.sign_document(private_key, cert, settings.security[:signature_method], settings.security[:digest_method])
