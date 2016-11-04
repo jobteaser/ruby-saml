@@ -81,7 +81,11 @@ class MetadataTest < Test::Unit::TestCase
     assert_equal "Name", req_attr.attribute("Name").value
     assert_equal "Name Format", req_attr.attribute("NameFormat").value
     assert_equal "Friendly Name", req_attr.attribute("FriendlyName").value
-    assert_equal "Attribute Value", REXML::XPath.first(xml_doc, "//md:AttributeValue").text.strip
+    assert_equal "Attribute Value", REXML::XPath.first(xml_doc, "//saml:AttributeValue").text.strip
+
+    sls = REXML::XPath.first(doc_metadata, "//md:SingleLogoutService")
+    assert_nil sls.attribute("isDefault")
+    assert_nil sls.attribute("index")
   end
 
 end
