@@ -26,15 +26,25 @@ module OneLogin
         if settings.issuer
           root.attributes["entityID"] = settings.issuer
         end
+        #
+        # Add KeyDescriptor if messages will be signed
+        cert = settings.get_sp_cert()
+        if cert
+          kd = sp_sso.add_element "md:KeyDescriptor", { "use" => "signing" }
+          ki = kd.add_element "ds:KeyInfo", {"xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#"}
+          xd = ki.add_element "ds:X509Data"
+          xc = xd.add_element "ds:X509Certificate"
+          xc.text = Base64.encode64(cert.to_der).gsub("\n", '')
+        end
+
         if settings.single_logout_service_url
           sp_sso.add_element "md:SingleLogoutService", {
               "Binding" => settings.single_logout_service_binding,
               "Location" => settings.single_logout_service_url,
               "ResponseLocation" => settings.single_logout_service_url,
-              "isDefault" => true,
-              "index" => 0
           }
         end
+
         if settings.name_identifier_format
           name_id = sp_sso.add_element "md:NameIDFormat"
           name_id.text = settings.name_identifier_format
@@ -48,20 +58,11 @@ module OneLogin
           }
         end
 
-        # Add KeyDescriptor if messages will be signed
-        cert = settings.get_sp_cert()
-        if cert
-          kd = sp_sso.add_element "md:KeyDescriptor", { "use" => "signing" }
-          ki = kd.add_element "ds:KeyInfo", {"xmlns:ds" => "http://www.w3.org/2000/09/xmldsig#"}
-          xd = ki.add_element "ds:X509Data"
-          xc = xd.add_element "ds:X509Certificate"
-          xc.text = Base64.encode64(cert.to_der).gsub("\n", '')
-        end
 
         if settings.attribute_consuming_service.configured?
           sp_acs = sp_sso.add_element "md:AttributeConsumingService", {
             "isDefault" => "true",
-            "index" => settings.attribute_consuming_service.index 
+            "index" => settings.attribute_consuming_service.index
           }
           srv_name = sp_acs.add_element "md:ServiceName", {
             "xml:lang" => "en"
@@ -70,7 +71,7 @@ module OneLogin
           settings.attribute_consuming_service.attributes.each do |attribute|
             sp_req_attr = sp_acs.add_element "md:RequestedAttribute", {
               "NameFormat" => attribute[:name_format],
-              "Name" => attribute[:name], 
+              "Name" => attribute[:name],
               "FriendlyName" => attribute[:friendly_name]
             }
             unless attribute[:attribute_value].nil?
