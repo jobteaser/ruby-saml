@@ -64,10 +64,17 @@ module OneLogin
             "isDefault" => "true",
             "index" => settings.attribute_consuming_service.index
           }
+
           srv_name = sp_acs.add_element "md:ServiceName", {
             "xml:lang" => "en"
           }
           srv_name.text = settings.attribute_consuming_service.name
+
+          srv_description = sp_acs.add_element "md:ServiceDescription", {
+            "xml:lang" => "en"
+          }
+          srv_description.text = settings.attribute_consuming_service.description
+
           settings.attribute_consuming_service.attributes.each do |attribute|
             sp_req_attr = sp_acs.add_element "md:RequestedAttribute", {
               "NameFormat" => attribute[:name_format],
