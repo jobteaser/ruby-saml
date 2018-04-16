@@ -57,6 +57,9 @@ module XMLSecurity
       if algorithm.is_a?(REXML::Element)
         algorithm = element.attribute("Algorithm").value
         algorithm = algorithm && algorithm =~ /sha(.*?)$/i && $1.to_i
+      elsif algorithm.is_a?(String) && algorithm =~ /xmldsig/
+        # One of XMLSecurity::Document::SHA...
+        algorithm = algorithm[/sha(\d+)$/, 1].to_i
       end
 
       case algorithm

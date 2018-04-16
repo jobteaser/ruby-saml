@@ -188,19 +188,27 @@ class RequestTest < Test::Unit::TestCase
         settings.assertion_consumer_service_binding = "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign"
         settings.security[:authn_requests_signed] = true
         settings.security[:embed_sign] = false
-        settings.security[:signature_method] = XMLSecurity::Document::SHA1
-        settings.certificate  = ruby_saml_cert_text
+        settings.certificate = ruby_saml_cert_text
         settings.private_key = ruby_saml_key_text
 
+        settings.security[:signature_method] = XMLSecurity::Document::SHA1
         params = OneLogin::RubySaml::Authrequest.new.create_params(settings)
         assert params['Signature']
         assert params['SigAlg'] == XMLSecurity::Document::SHA1
 
-        # signature_method only affects the embedeed signature
+        # Ensure the signature is signed with the specified algorithm
+        cert = settings.get_sp_cert
+        signed_text = params.to_a[0..1].map {|i| i.map { |o| CGI.escape(o) }.join('=')}.join('&')
+        assert cert.public_key.verify(OpenSSL::Digest::SHA1.new, Base64.decode64(params['Signature']), signed_text), 'Signature is not correct for SHA1'
+
         settings.security[:signature_method] = XMLSecurity::Document::SHA256
         params = OneLogin::RubySaml::Authrequest.new.create_params(settings)
         assert params['Signature']
-        assert params['SigAlg'] == XMLSecurity::Document::SHA1
+        assert params['SigAlg'] == XMLSecurity::Document::SHA256
+
+        # Ensure the signature is correctly signed with another algorithm
+        signed_text = params.to_a[0..1].map {|i| i.map { |o| CGI.escape(o) }.join('=')}.join('&')
+        assert cert.public_key.verify(OpenSSL::Digest::SHA256.new, Base64.decode64(params['Signature']), signed_text), 'Signature is not correct for SHA256'
       end
     end
 
