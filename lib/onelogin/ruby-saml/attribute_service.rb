@@ -3,6 +3,7 @@ module OneLogin
     class AttributeService
       attr_reader :attributes
       attr_reader :name
+      attr_reader :description
       attr_reader :index
 
       def initialize
@@ -15,19 +16,23 @@ module OneLogin
       end
 
       def configured?
-        @attributes.length > 0 && !@name.nil?
+        !@name.nil?
       end
 
       def service_name(name)
         @name = name
       end
 
+      def service_description(description)
+        @description = description
+      end
+
       def service_index(index)
         @index = index
       end
-      
+
       def add_attribute(options={})
-        attributes << options 
+        attributes << options
       end
     end
   end
